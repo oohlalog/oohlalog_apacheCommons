@@ -11,7 +11,8 @@ public class TestLogger {
 		Log m_log = LogFactory.getLog(TestLogger.class);
 		System.out.println("---Beginning---");
 		for (int i = 0; i < 151; i++) {
-			m_log.error(String.valueOf(i), new Throwable("throwable"));
+			m_log.warn("h"+String.valueOf(i), new Throwable("throwable"));
+//			Thread.sleep(500);
 		}
 		System.out.println("end");
 	}

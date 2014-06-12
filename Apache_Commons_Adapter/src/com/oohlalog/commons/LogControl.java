@@ -22,7 +22,7 @@ public class LogControl {
 	private long lastFlush = System.currentTimeMillis();
 	private final AtomicBoolean flushing = new AtomicBoolean( false );
 	private final AtomicBoolean shutdown = new AtomicBoolean( false );
-	
+
 	// Config options
 	private int maxBuffer = 150;
 	private long statsInterval = 60000;
@@ -36,45 +36,42 @@ public class LogControl {
 		this.timeBuffer = timeBuffer;
 	}
 
-	
+
 	protected void init() {
 		if ( this.executorService != null ) {
 			this.executorService.shutdown();
 		}
-//		this.executorService = Executors.newFixedThreadPool(this.submissionThreadPool);
+		//		this.executorService = Executors.newFixedThreadPool(this.submissionThreadPool);
 	}
-	
 
-	
+
+
 	/**
 	 * Flushes the queue of log entries if the queue is of size greater than buffer threshold.
 	 */
 	protected void checkThreshold()
 	{
-		if (logger.getDebug()) System.out.println( ">>Check Threshold" );
 		Queue<LogEntry> buffer = this.logger.getQueue();
 		if (buffer.size() > maxBuffer && !flushing.get()) {
-			flushQueue(buffer);
-			if (logger.getDebug()) System.out.println( ">>Above Threshold" );
-		}
+			if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
+			flushQueue(buffer);		}
 	}
-	
-	
-	
+
+
+
 	protected void startFlushTimer() {
 		final OohLaLogLogger logger = this.logger;
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				// If appender closes, let thread die
-				while ( !shutdown.get() ) {
-
+				while ( true ) {
 					if (logger.getDebug()) System.out.println( ">>Timer Cycle" );
 					// If timeout, flush queue
-					
+
 					if ( (System.currentTimeMillis() - lastFlush > timeBuffer) && !flushing.get() ) {
-						if (logger.getDebug()) System.out.println( "Flushing from timer expiration" );
-						flushQueue( logger.getQueue(), maxBuffer );					
-						
+						if (logger.getDebug()) System.out.println( ">>>Flushing from timer expiration" );
+						flushQueue( logger.getQueue(), maxBuffer );
+						return;
 					}
 
 					// Sleep the thread
@@ -83,7 +80,7 @@ public class LogControl {
 					}
 					catch ( InterruptedException ie ) {
 						// Ignore, and continue
-						return;
+						//						return;
 					}
 				}
 			}
@@ -183,31 +180,32 @@ public class LogControl {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing " + count + " items from queue");
 		flushing.set( true );
-//		executorService.execute(new Runnable() {
+		
+		if(queue.isEmpty())
+			return;
+		//		executorService.execute(new Runnable() {
 		Thread t = new Thread( new Runnable() {
 			public void run() {
-				while(queue.size() >= count) {
-					List<LogEntry> logs = new ArrayList<LogEntry>(count);
-					for (int i = 0; i < count; i++) {
-						LogEntry log;
-						if ((log = queue.poll()) == null)
-							break;
+				List<LogEntry> logs = new ArrayList<LogEntry>(count);
+				for (int i = 0; i < count; i++) {
+					LogEntry log;
+					if ((log = queue.poll()) == null)
+						break;
 
-						logs.add(log);
-					}
-					if(logs.size() > 0) {
-						Payload pl = new Payload.Builder()
-						.messages(logs)
-						.authToken(logger.getAuthToken())
-						.host(logger.getHost())
-						.agent(logger.getAgent())
-						.path(logger.getPath())
-						.port(logger.getPort())
-						.secure(logger.getSecure())
-						.debug(logger.getDebug())
-						.build();
-						Payload.send( pl );
-					}
+					logs.add(log);
+				}
+				if(logs.size() > 0) {
+					Payload pl = new Payload.Builder()
+					.messages(logs)
+					.authToken(logger.getAuthToken())
+					.host(logger.getHost())
+					.agent(logger.getAgent())
+					.path(logger.getPath())
+					.port(logger.getPort())
+					.secure(logger.getSecure())
+					.debug(logger.getDebug())
+					.build();
+					Payload.send( pl );
 				}
 
 				lastFlush = System.currentTimeMillis();
@@ -215,6 +213,7 @@ public class LogControl {
 			}
 		});
 		t.start();
+		startFlushTimer();
 	}
 
 	/**
@@ -224,10 +223,11 @@ public class LogControl {
 	protected void flushQueue( final Queue<LogEntry> queue ) {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Queue Completely" );
-//		executorService.execute(new Runnable() {
+		//		executorService.execute(new Runnable() {
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				int size = queue.size();
+				System.out.println("size =" + size);
 				List<LogEntry> logs = new ArrayList<LogEntry>(size);
 				for (int i = 0; i < size; i++) {
 					LogEntry log;
@@ -236,7 +236,7 @@ public class LogControl {
 
 					logs.add(log);
 				}
-				
+
 				if(logs.size() == 0) {
 					return;
 				}
@@ -316,12 +316,12 @@ public class LogControl {
 		return submissionThreadPool;
 	}
 
-//	public void setSubmissionThreadPool(int submissionThreadPool) {
-//		this.submissionThreadPool = submissionThreadPool;
-//		synchronized ( lock ) {
-//			init();
-//		}
-//	}
+	//	public void setSubmissionThreadPool(int submissionThreadPool) {
+	//		this.submissionThreadPool = submissionThreadPool;
+	//		synchronized ( lock ) {
+	//			init();
+	//		}
+	//	}
 
 
 	public OohLaLogLogger getLogger() {

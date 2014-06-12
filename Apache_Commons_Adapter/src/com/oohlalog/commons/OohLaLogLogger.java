@@ -69,7 +69,7 @@ public class OohLaLogLogger implements Log{
     private Queue<LogEntry> queue = new ArrayDeque<LogEntry>();
 	
     // The time threshold controlling how often uploads to the OLL server are made
-    private long timeBuffer = 10000;
+    private long timeBuffer = 1000;
     
     // Batch size logs are released in
 	private int maxBuffer = 150;//5;
@@ -191,7 +191,7 @@ public class OohLaLogLogger implements Log{
     {
 		logControl.init();
     	logControl.startFlushTimer();
-    	logControl.startStatsTimer();
+//    	logControl.startStatsTimer();
     }
     
     
