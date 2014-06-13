@@ -85,7 +85,7 @@ To use the OohLaLog Log4J Appender please include the following jars in your cla
 
 ###1. OohLaLog Jar
 ```
-oohlalog-4j-0.1.3.jar 
+TODO
 ```
 
 ###2. Commons Logging JAR
