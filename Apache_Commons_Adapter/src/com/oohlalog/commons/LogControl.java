@@ -7,16 +7,27 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogControl {
+	// The time interval between automatic flushes of logs
 	private long timeBuffer;
-	private long lastFlush = System.currentTimeMillis();
-	private final AtomicBoolean flushing = new AtomicBoolean( false );
-
-	// Config options
-	private int maxBuffer;
+	// The time interval between automatic flushes of statistical data
 	private long statsInterval;
+	// Time of last flush
+	private long lastFlush = System.currentTimeMillis();
+	// Is a flushing process currently happening?  TODO: Implement synchronized methods instead
+	private final AtomicBoolean flushing = new AtomicBoolean( false );
+	// Maximum size of the queue before we automatically flush it
+	private int maxBuffer;
 
+	// The logger instance belonging to this LogControl
 	private OohLaLogLogger logger;
 
+	
+	/**
+	 * Constructor that creates our LogControl object.
+	 * @param logger
+	 * @param maxBuffer
+	 * @param timeBuffer
+	 */
 	public LogControl(OohLaLogLogger logger, int maxBuffer, long timeBuffer) {
 		this.logger = logger;
 		this.maxBuffer = maxBuffer;
