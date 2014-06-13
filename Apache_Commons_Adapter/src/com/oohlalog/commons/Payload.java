@@ -78,8 +78,7 @@ public class Payload {
 
 		map.put( "level", le.getLevelString() );
 		map.put( "message", le.getMessage() );
-//		map.put( "timestamp", le.getTimeStamp());
-		map.put( "timestamp", null);
+		map.put( "timestamp", le.getTimeStamp());
 		map.put( "hostname", le.getHostName());
 		map.put("category", le.getCategory() ); // allow for an explicit category
 		map.put( "details", le.getDetails());
@@ -105,7 +104,7 @@ public class Payload {
 
 			if (pl.getDebug()) System.out.println( ">>>>>>>>>>>Payload: " + pl.toString() );
 
-			// Create connection to oohlalog server
+			// Create connection to OohLaLog server
 			URL url = new URL( (pl.getSecure() ? "https" : "http"), pl.getHost(), pl.getPort(), pl.getPath()+"?apiKey="+pl.getAuthToken() );
 
 			if (pl.getDebug()) System.out.println( ">>>>>>>>>>>Submitting to: " + url.toString() );

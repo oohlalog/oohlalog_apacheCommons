@@ -51,13 +51,16 @@ public class OohLaLogLogger implements Log{
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
     private Queue<LogEntry> queue = new ArrayDeque<LogEntry>();
 	
-    // The time threshold controlling how often uploads to the OLL server are made
+    // The time threshold controlling how often uploads of logs are made to the OLL server
     private long timeBuffer = 10000;
     
     // Batch size logs are released in
 	private int maxBuffer = 150;//5;
 	
-	// For congifuring the URL
+    // The time threshold controlling how often uploads of statistics are made to the OLL server
+	private long statsBuffer = 60000; // 1 minute
+	
+	// For configuring the URL
 	private String host = "localhost";
 	private String path = "/api/logging/save.json";
 	private String statsPath = "/api/timeSeries/save.json";
@@ -69,8 +72,6 @@ public class OohLaLogLogger implements Log{
 	private boolean secure = false;
 	private boolean debug = true;
 	private String hostName = null;
-
-	private long statsBuffer = 60000; // 1 minute
 	
 	private boolean showMemoryStats = true;
 	private boolean showFileSystemStats = true;
@@ -83,13 +84,13 @@ public class OohLaLogLogger implements Log{
 	private final LogControl logControl;
 
     // The name of this OohLaLogLogger instance 
-    protected volatile String logName = null;
+    private String logName;;
     
     // The current log level
     protected volatile int currentLogLevel;
     
     // The short name of this simple log instance 
-    private volatile String logShortName = null;
+    private String logShortName;
     
     
     //----------------------------------------------------------------------------------------
@@ -158,11 +159,13 @@ public class OohLaLogLogger implements Log{
      * authToken and the currentLevel.
      */
     public OohLaLogLogger(String name) {
+    	logName = name;
     	setAuthToken();
     	setCurrentLevel();
     	setShowStats();
     	setLoggingInterval();
-    	logName = name;
+    	String temp = logName.substring(logName.lastIndexOf(".") + 1);
+        logShortName = temp.substring(temp.lastIndexOf("/") + 1);
     	logControl = new LogControl(this, this.maxBuffer, this.timeBuffer, this.statsBuffer);
     	logControl.init();
     }
@@ -180,14 +183,7 @@ public class OohLaLogLogger implements Log{
         Long timeStamp = now.getTime();
         
      // Append the name of the log instance if so configured
-        String logShortName = null;
-        if(showShortName) {
-            if(logShortName == null) {
-                // Cut all but the last component of the name for both styles
-                final String slName = logName.substring(logName.lastIndexOf(".") + 1);
-                logShortName = slName.substring(slName.lastIndexOf("/") + 1);
-            }
-        } 
+        String shortName = showShortName? logShortName : null;  
    
         // Details
 		StringBuilder sbDetails = new StringBuilder();
@@ -203,7 +199,7 @@ public class OohLaLogLogger implements Log{
         String details = sbDetails.toString();
         String category = null;
         
-        final LogEntry log = new LogEntry(type, (String)message, logName, logShortName, timeStamp, hostName, details, category);
+        final LogEntry log = new LogEntry(type, (String)message, logName, shortName, timeStamp, hostName, details, category);
         queue.add(log);
         this.logControl.checkThreshold();
     }
@@ -238,6 +234,7 @@ public class OohLaLogLogger implements Log{
     	maxBuffer = getIntProperty(systemPrefix + "maxBuffer", maxBuffer);
     }
     
+    
     /**
      * Sets the level of this logger by reading from the properties file.
      */
@@ -246,16 +243,15 @@ public class OohLaLogLogger implements Log{
     	setLevel(OohLaLogLogger.LOG_LEVEL_INFO);
 
         // Set log level from properties
-        String lvl = getStringProperty(systemPrefix + "log." + logName);
-        int i = String.valueOf(logName).lastIndexOf(".");
-
-        while(null == lvl && i > -1) {
-            logName = logName.substring(0,i);
-            lvl = getStringProperty(systemPrefix + "log." + logName);
-            i = String.valueOf(logName).lastIndexOf(".");
+        String lvl = null;
+        lvl = getStringProperty(systemPrefix + "log." + logName);
+        int i = String.valueOf(logName).lastIndexOf(".") + 1;
+        
+        if (lvl == null) {
+        	lvl = getStringProperty(systemPrefix + "log." + logName.substring(i));
         }
 
-        if(null == lvl) {
+        if(lvl == null) {
             lvl =  getStringProperty(systemPrefix + "defaultlog");
         }
 

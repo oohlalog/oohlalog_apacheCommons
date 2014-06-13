@@ -10,11 +10,11 @@ public class TestLogger {
 		System.out.println("---Beginning---");
 		for (int i = 0; i < 151; i++) {
 //			m_log.warn("i"+String.valueOf(i), new Throwable("throwable"));
-			m_log.warn("i"+String.valueOf(i));
+			m_log.info("i"+String.valueOf(i));
 		}
 		Thread.sleep(2000);
 		for (int i = 151; i < 352; i++) {
-			m_log.error("i"+String.valueOf(i));
+			m_log.error("z"+String.valueOf(i));
 		}
 		System.out.println("end");
 		m_log = null;
