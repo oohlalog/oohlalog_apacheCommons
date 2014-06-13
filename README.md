@@ -20,7 +20,9 @@ org.apache.commons.logging.Log=com.oohlalog.commons.OohLaLogLogger
 Additional configuration options are to be placed in an alternative properties file, oohlalog.properties.  
 The only required property to include is your OohLaLog authToken.  
 Similarly to the Commons standard, you have the ability to specify whether you would like to see the full log name, the shortened version of the name, or both.
+
 You also can specify the minimum loggign level for the logger.  For example, if set to "warn", only messages of equal severity or higher will be logged.
+
 Specific to OohLaLog, you have the ability to configure how often logs are uploaded to the OohLaLog server, in addition to having control over which statistics 
 you would like uploaded. 
 
