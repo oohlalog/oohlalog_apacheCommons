@@ -19,7 +19,6 @@ public class StatsPayload {
 	private String hostName = null;
 	private String path = null;
 	private String agent = null;
-	private String statsPath = null;
 	private Map<String, Double> metrics = null;
 	private int port;
 	private boolean secure = false;
