@@ -64,9 +64,8 @@ public class LogControl {
 
 					// If timeout, flush queue
 					if ( (System.currentTimeMillis() - lastFlush > timeBuffer) && !flushing.get() ) {
-						System.out.println("HERERERERERERERERER");
 						if (logger.getDebug()) System.out.println( ">>>Flushing from timer expiration" );
-						flushQueue( logger.getQueue(), maxBuffer );
+						flushQueue( logger.getQueue() );
 					}
 
 					// Sleep the thread
@@ -124,50 +123,50 @@ public class LogControl {
 
 
 
-	/**
-	 * Flush <b>count</b> number of items from queue
-	 * @param queue
-	 */
-	protected void flushQueue( final Queue<LogEntry> queue, final int count ) {
-		final OohLaLogLogger logger = this.logger;
-		if (logger.getDebug()) System.out.println( ">>>>>>Flushing " + count + " items from queue");
-		flushing.set( true );
-
-		if(queue.isEmpty()) {
-			flushing.set( false );
-			return;
-		}
-		Thread t = new Thread( new Runnable() {
-//		executorService.execute(new Runnable() {
-			public void run() {
-				List<LogEntry> logs = new ArrayList<LogEntry>(count);
-				for (int i = 0; i < count; i++) {
-					LogEntry log;
-					if ((log = queue.poll()) == null)
-						break;
-
-					logs.add(log);
-				}
-				if(logs.size() > 0) {
-					Payload pl = new Payload.Builder()
-					.messages(logs)
-					.authToken(logger.getAuthToken())
-					.host(logger.getHost())
-					.agent(logger.getAgent())
-					.path(logger.getPath())
-					.port(logger.getPort())
-					.secure(logger.getSecure())
-					.debug(logger.getDebug())
-					.build();
-					Payload.send( pl );
-				}
-
-				lastFlush = System.currentTimeMillis();
-				flushing.set( false );
-			}
-		});
-				t.start();
-	}
+//	/**
+//	 * Flush <b>count</b> number of items from queue
+//	 * @param queue
+//	 */
+//	protected void flushQueue( final Queue<LogEntry> queue, final int count ) {
+//		final OohLaLogLogger logger = this.logger;
+//		if (logger.getDebug()) System.out.println( ">>>>>>Flushing " + count + " items from queue");
+//		flushing.set( true );
+//
+//		if(queue.isEmpty()) {
+//			flushing.set( false );
+//			return;
+//		}
+//		Thread t = new Thread( new Runnable() {
+////		executorService.execute(new Runnable() {
+//			public void run() {
+//				List<LogEntry> logs = new ArrayList<LogEntry>(count);
+//				for (int i = 0; i < count; i++) {
+//					LogEntry log;
+//					if ((log = queue.poll()) == null)
+//						break;
+//
+//					logs.add(log);
+//				}
+//				if(logs.size() > 0) {
+//					Payload pl = new Payload.Builder()
+//					.messages(logs)
+//					.authToken(logger.getAuthToken())
+//					.host(logger.getHost())
+//					.agent(logger.getAgent())
+//					.path(logger.getPath())
+//					.port(logger.getPort())
+//					.secure(logger.getSecure())
+//					.debug(logger.getDebug())
+//					.build();
+//					Payload.send( pl );
+//				}
+//
+//				lastFlush = System.currentTimeMillis();
+//				flushing.set( false );
+//			}
+//		});
+//				t.start();
+//	}
 
 	/**
 	 * flush queue completely

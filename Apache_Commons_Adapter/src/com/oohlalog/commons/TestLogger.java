@@ -15,7 +15,7 @@ public class TestLogger {
 		Thread.sleep(2000);
 		System.out.println("test");
 		for (int i = 151; i < 352; i++) {
-			m_log.warn("i"+String.valueOf(i));
+			m_log.error("i"+String.valueOf(i));
 		}
 		System.out.println("end");
 		m_log = null;
