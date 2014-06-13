@@ -47,21 +47,6 @@ public class OohLaLogLogger implements Log{
     // Include the short name ( last component ) of the logger in the log message. Defaults to true. 
     static volatile protected boolean showShortName = true;
 
-    // Include the current time in the log message 
-    static volatile protected boolean showDateTime = false;
-
-    // The date and time format to use in the log message 
-//    static volatile protected String dateTimeFormat = DEFAULT_DATE_TIME_FORMAT;
-
-    /**
-     * Used to format times.
-     * <p>
-     * Any code that accesses this object should first obtain a lock on it,
-     * ie use synchronized(dateFormatter); this requirement was introduced
-     * in 1.1.1 to fix an existing thread safety bug (SimpleDateFormat.format
-     * is not thread-safe).
-     */
-//    static protected DateFormat dateFormatter = null;
 
 	// ------------------------------------------------------------ Instance Variables
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
@@ -109,8 +94,8 @@ public class OohLaLogLogger implements Log{
     
     /**
      * This section handles loading properties from the properties file.  Specifically, it loads
-     * the static properties for all instances of OohLaLogLogger including the boolean fields showLogName, 
-     * showShortName, and showDateTime.  
+     * the static properties for all instances of OohLaLogLogger including the boolean fields showLogName and
+     * showShortName.  
      * 
      * This code has been adapted from org.apache.commons.logging.simplelog.
      */
@@ -152,19 +137,7 @@ public class OohLaLogLogger implements Log{
 
         showLogName = getBooleanProperty(systemPrefix + "showlogname", showLogName);
         showShortName = getBooleanProperty(systemPrefix + "showshortname", showShortName);
-        showDateTime = getBooleanProperty(systemPrefix + "showdatetime", showDateTime);
 
-//        if(showDateTime) {
-//            dateTimeFormat = getStringProperty(systemPrefix + "dateTimeFormat",
-//                                               dateTimeFormat);
-//            try {
-//                dateFormatter = new SimpleDateFormat(dateTimeFormat);
-//            } catch(IllegalArgumentException e) {
-//                // If the format pattern is invalid - use the default format
-//                dateTimeFormat = DEFAULT_DATE_TIME_FORMAT;
-//                dateFormatter = new SimpleDateFormat(dateTimeFormat);
-//            }
-//        }
     }
     
     // ------------------------------------------------------------ Constructor
@@ -189,15 +162,9 @@ public class OohLaLogLogger implements Log{
      * Creates a LogEntry and then adds it to the logger's queue.
      */
     protected void log(int type, Object message, Throwable t) {
-        // Append date-time if so configured
-        Long timeStamp = null;
-        if(showDateTime) {
-            final Date now = new Date();
-            timeStamp = now.getTime();
-//            synchronized(dateFormatter) {
-//                timeStamp = dateFormatter.format(now);
-//            }
-        }
+        // Append time stamp
+    	Date now = new Date();
+        Long timeStamp = now.getTime();
         
      // Append the name of the log instance if so configured
         String logShortName = null;
