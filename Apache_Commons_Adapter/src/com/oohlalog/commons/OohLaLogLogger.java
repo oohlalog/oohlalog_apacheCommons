@@ -178,22 +178,8 @@ public class OohLaLogLogger implements Log{
     	setCurrentLevel();
     	logName = name;
     	logControl = new LogControl(this, this.maxBuffer, this.timeBuffer);
-    	start();
+    	logControl.init();
     }
-
-
-
-    /**
-     * Starts up the OohLaLogLogger by initalizing the logControl belonging to this instance.
-     * This is both a public method and is implicitly called when creating an OohLaLogger instance.
-     */
-	public void start()
-    {
-		logControl.init();
-    	logControl.startFlushTimer();
-    	logControl.startStatsTimer();
-    }
-	
 	
     
     
