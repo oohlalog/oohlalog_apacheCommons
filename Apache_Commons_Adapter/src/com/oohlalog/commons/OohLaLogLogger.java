@@ -86,7 +86,7 @@ public class OohLaLogLogger implements Log{
 	private boolean secure = false;
 	private boolean debug = true;
 	private String hostName = null;
-	private boolean stats = false;
+	private boolean stats = true;
 	private boolean memoryStats = true;
 	private boolean fileSystemStats = true;
 	private boolean cpuStats = true;
@@ -186,13 +186,22 @@ public class OohLaLogLogger implements Log{
 
     /**
      * Starts up the OohLaLogLogger by initalizing the logControl belonging to this instance.
+     * This is both a public method and is implicitly called when creating an OohLaLogger instance.
      */
-	private void start()
+	public void start()
     {
 		logControl.init();
     	logControl.startFlushTimer();
-//    	logControl.startStatsTimer();
+    	logControl.startStatsTimer();
     }
+	
+	
+//	/**
+//	 * Shuts down the automatic logging of the OohLaLogLogger.
+//	 */
+//	public void stop() {
+//		logControl.shutdown();
+//	}
     
     
     // -------------------------------------------------------- Logging Methods
