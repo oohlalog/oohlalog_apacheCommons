@@ -47,13 +47,12 @@ public class OohLaLogLogger implements Log{
     // Include the short name ( last component ) of the logger in the log message. Defaults to true. 
     static volatile protected boolean showShortName = true;
 
-
 	// ------------------------------------------------------------ Instance Variables
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
     private Queue<LogEntry> queue = new ArrayDeque<LogEntry>();
 	
     // The time threshold controlling how often uploads to the OLL server are made
-    private long timeBuffer = 1000;
+    private long timeBuffer = 10000;
     
     // Batch size logs are released in
 	private int maxBuffer = 150;//5;
@@ -70,11 +69,14 @@ public class OohLaLogLogger implements Log{
 	private boolean secure = false;
 	private boolean debug = true;
 	private String hostName = null;
-	private boolean stats = true;
-	private boolean memoryStats = true;
-	private boolean fileSystemStats = true;
-	private boolean cpuStats = true;
-	private long statsInterval = 60000; // 1 minute
+
+	private long statsBuffer = 60000; // 1 minute
+	
+	private boolean showMemoryStats = true;
+	private boolean showFileSystemStats = true;
+	private boolean showCPUStats = true;
+	private boolean showStats = true;
+	
 	Object previousCpuUsage;
 
 	// The object that controls when requests are actually sent to the OLL server
@@ -114,6 +116,16 @@ public class OohLaLogLogger implements Log{
         String prop = getStringProperty(name);
         return prop == null ? dephault : prop;
     }
+    
+    private static long getLongProperty(String name, long dephault) {
+        Long prop = Long.parseLong(getStringProperty(name));
+        return prop == null ? dephault : prop;
+    }
+    
+    private static int getIntProperty(String name, int dephault) {
+        Integer prop = Integer.parseInt(getStringProperty(name));
+        return prop == null ? dephault : prop;
+    }
 
     private static boolean getBooleanProperty(String name, boolean dephault) {
         String prop = getStringProperty(name);
@@ -134,10 +146,9 @@ public class OohLaLogLogger implements Log{
                 // ignored
             }
         }
-
-        showLogName = getBooleanProperty(systemPrefix + "showlogname", showLogName);
-        showShortName = getBooleanProperty(systemPrefix + "showshortname", showShortName);
-
+        
+        showLogName = getBooleanProperty(systemPrefix + "showLogName", showLogName);
+        showShortName = getBooleanProperty(systemPrefix + "showShortName", showShortName);
     }
     
     // ------------------------------------------------------------ Constructor
@@ -149,8 +160,10 @@ public class OohLaLogLogger implements Log{
     public OohLaLogLogger(String name) {
     	setAuthToken();
     	setCurrentLevel();
+    	setShowStats();
+    	setLoggingInterval();
     	logName = name;
-    	logControl = new LogControl(this, this.maxBuffer, this.timeBuffer);
+    	logControl = new LogControl(this, this.maxBuffer, this.timeBuffer, this.statsBuffer);
     	logControl.init();
     }
 	
@@ -203,6 +216,27 @@ public class OohLaLogLogger implements Log{
     	authToken = getStringProperty(systemPrefix + "authToken", authToken);	
     }
     
+    
+    /**
+     * Sets the boolean values that control whether or not the different statistics should be sent to the server.
+     */
+    private void setShowStats() {
+        showMemoryStats = getBooleanProperty(systemPrefix + "showMemoryStats", showMemoryStats);
+        showFileSystemStats = getBooleanProperty(systemPrefix + "showFileSystemStats", showFileSystemStats);
+        showCPUStats = getBooleanProperty(systemPrefix + "showCPUStats", showCPUStats);
+        showStats = getBooleanProperty(systemPrefix + "showStats", showStats);
+    }
+    
+    
+    /**
+     * Configures the frequency with which logs are sent to the OohLaLog server by reading the 
+     * setting form the properties file.
+     */
+    private void setLoggingInterval() {
+    	timeBuffer = getLongProperty(systemPrefix + "timeBuffer", timeBuffer);
+    	statsBuffer = getLongProperty(systemPrefix + "statsBuffer", timeBuffer);
+    	maxBuffer = getIntProperty(systemPrefix + "maxBuffer", maxBuffer);
+    }
     
     /**
      * Sets the level of this logger by reading from the properties file.
@@ -440,8 +474,8 @@ public class OohLaLogLogger implements Log{
 	 * Getter method for returning a boolean indicating whether or not logging stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public boolean getStats() {
-		return stats;
+	public boolean getShowStats() {
+		return showStats;
 	}
 
 	
@@ -449,8 +483,8 @@ public class OohLaLogLogger implements Log{
 	 * Setter method for setting a boolean indicating whether or not logging stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public void setStats(boolean stats) {
-		this.stats = stats;
+	public void setShowStats(boolean showStats) {
+		this.showStats = showStats;
 	}
 
 	
@@ -458,8 +492,8 @@ public class OohLaLogLogger implements Log{
 	 * Getter method for returning a long representing the time in milliseconds this instance of 
 	 * OohLaLogLogger will wait before sending stats to the OohLaLog server.
 	 */
-	public long getStatsInterval() {
-		return statsInterval;
+	public long getstatsBuffer() {
+		return statsBuffer;
 	}
 
 	
@@ -467,8 +501,8 @@ public class OohLaLogLogger implements Log{
 	 * Setter method for setting a long representing the time in milliseconds this instance of 
 	 * OohLaLogLogger will wait before sending stats to the OohLaLog server.
 	 */
-	public void setStatsInterval(long statsInterval) {
-		this.statsInterval = statsInterval;
+	public void setstatsBuffer(long statsBuffer) {
+		this.statsBuffer = statsBuffer;
 	}
 
 	
@@ -476,8 +510,8 @@ public class OohLaLogLogger implements Log{
 	 * Getter method for returning a boolean indicating whether or not memory stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public boolean getMemoryStats() {
-		return memoryStats;
+	public boolean getShowMemoryStats() {
+		return showMemoryStats;
 	}
 
 	
@@ -485,8 +519,8 @@ public class OohLaLogLogger implements Log{
 	 * Setter method for setting a boolean indicating whether or not memory stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public void setMemoryStats(boolean memoryStats) {
-		this.memoryStats = memoryStats;
+	public void setShowMemoryStats(boolean showMemoryStats) {
+		this.showMemoryStats = showMemoryStats;
 	}
 
 	
@@ -494,8 +528,8 @@ public class OohLaLogLogger implements Log{
 	 * Getter method for returning a boolean indicating whether or not cpu stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public boolean getCpuStats() {
-		return cpuStats;
+	public boolean getShowCPUStats() {
+		return showCPUStats;
 	}
 
 	
@@ -503,8 +537,8 @@ public class OohLaLogLogger implements Log{
 	 * Setter method for setting a boolean indicating whether or not cpu stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public void setCpuStats(boolean cpuStats) {
-		this.cpuStats = cpuStats;
+	public void setShowCPUStats(boolean showCPUStats) {
+		this.showCPUStats = showCPUStats;
 	}
 
 	
@@ -512,8 +546,8 @@ public class OohLaLogLogger implements Log{
 	 * Getter method for returning a boolean indicating whether or not file system stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public boolean getFileSystemStats() {
-		return fileSystemStats;
+	public boolean getShowFileSystemStats() {
+		return showFileSystemStats;
 	}
 
 	
@@ -521,8 +555,8 @@ public class OohLaLogLogger implements Log{
 	 * Setter method for setting a boolean indicating whether or not file system stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
-	public void setFileSystemStats(boolean fileSystemStats) {
-		this.fileSystemStats = fileSystemStats;
+	public void setShowFileSystemStats(boolean showFileSystemStats) {
+		this.showFileSystemStats = showFileSystemStats;
 	}
 
 	

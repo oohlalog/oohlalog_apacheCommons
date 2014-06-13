@@ -28,10 +28,11 @@ public class LogControl {
 	 * @param maxBuffer
 	 * @param timeBuffer
 	 */
-	public LogControl(OohLaLogLogger logger, int maxBuffer, long timeBuffer) {
+	public LogControl(OohLaLogLogger logger, int maxBuffer, long timeBuffer, long statsInterval) {
 		this.logger = logger;
 		this.maxBuffer = maxBuffer;
 		this.timeBuffer = timeBuffer;
+		this.statsInterval = statsInterval;
 	}
 
 
@@ -40,7 +41,7 @@ public class LogControl {
 	 */
 	protected void init() {
 		startFlushTimer();
-		if (logger.getStats()) startStatsTimer();
+		if (logger.getShowStats()) startStatsTimer();
 	}
 
 
@@ -101,7 +102,7 @@ public class LogControl {
 			public void run() {
 				// If appender closes, let thread die
 				while (true ) {
-					if (logger.getStats()) {
+					if (logger.getShowStats()) {
 						if (logger.getDebug()) System.out.println( ">>Stats Timer" );
 						Map<String,Double> metrics = StatsUtils.getStats(logger);
 						StatsPayload pl= new StatsPayload.Builder()

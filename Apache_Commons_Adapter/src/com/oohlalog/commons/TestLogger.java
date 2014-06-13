@@ -13,7 +13,6 @@ public class TestLogger {
 			m_log.warn("i"+String.valueOf(i));
 		}
 		Thread.sleep(2000);
-		System.out.println("test");
 		for (int i = 151; i < 352; i++) {
 			m_log.error("i"+String.valueOf(i));
 		}

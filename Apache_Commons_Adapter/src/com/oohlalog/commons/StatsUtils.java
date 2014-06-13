@@ -11,9 +11,9 @@ public class StatsUtils {
 
 	public static Map<String,Double> getStats(OohLaLogLogger logger) {
 		Map<String, Double> map = new HashMap<String, Double>();
-		if (logger.getMemoryStats()) getMemoryStats(logger, map);
-		if (logger.getFileSystemStats()) getFileSystemStats(logger, map);
-		if (logger.getCpuStats()) getCpuStats(logger, map);
+		if (logger.getShowMemoryStats()) getMemoryStats(logger, map);
+		if (logger.getShowFileSystemStats()) getFileSystemStats(logger, map);
+		if (logger.getShowCPUStats()) getCpuStats(logger, map);
 		return map;
 	}
 
