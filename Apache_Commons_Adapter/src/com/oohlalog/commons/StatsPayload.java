@@ -1,16 +1,13 @@
 package com.oohlalog.commons;
-import com.google.gson.Gson;
-import com.oohlalog.commons.Payload.Builder;
-
-import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import com.google.gson.Gson;
 
 public class StatsPayload {
 	static final String PAYLOAD_METRICS = "metrics";

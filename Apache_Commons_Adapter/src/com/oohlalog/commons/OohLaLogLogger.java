@@ -5,14 +5,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogConfigurationException;
 
@@ -196,12 +195,6 @@ public class OohLaLogLogger implements Log{
     }
 	
 	
-//	/**
-//	 * Shuts down the automatic logging of the OohLaLogLogger.
-//	 */
-//	public void stop() {
-//		logControl.shutdown();
-//	}
     
     
     // -------------------------------------------------------- Logging Methods

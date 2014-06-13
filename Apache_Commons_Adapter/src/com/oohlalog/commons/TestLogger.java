@@ -3,8 +3,6 @@ package com.oohlalog.commons;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.oohlalog.commons.OohLaLogLogger;
-
 public class TestLogger {
 
 	public static void main(String[] args) throws InterruptedException {
