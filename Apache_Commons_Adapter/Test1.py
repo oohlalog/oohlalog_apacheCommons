@@ -8,4 +8,6 @@ def main():
 	elif output.count('Received: {"insertCount":150,"success":true}') > 12:
 		print "Failed: Too many successful posts to OLL"
 
+    print output.count('Received: {"insertCount":150,"success":true}')
+
 main()

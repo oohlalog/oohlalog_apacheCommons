@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
+echo "Starting Test"
 java -jar Test1.jar | python Test1.py
