@@ -8,7 +8,8 @@ def main():
 			print "FAILURE: Trace level logs should not appear when default level is info"
 		if "DEBUG" in output:
 			print "FAILURE: Debug level logs should not appear when default level is info"
-	else print "SUCCESS"
+	else:
+		print "SUCCESS"
 
 
 main()

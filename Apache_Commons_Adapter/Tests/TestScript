@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 
+java -jar Test1.jar > output1.txt
+echo "Collecting Output..."
+
 echo "======================================================="
 echo "Test 1"
 echo 
-java -jar Test1.jar | python Test1.py
+python Test1.py < output1.txt
 echo "======================================================="
+
+echo "======================================================="
+echo "Test 2"
+echo 
+python Test2.py < output1.txt
+echo "======================================================="
+
+#Clean up
+rm -f output1.txt
