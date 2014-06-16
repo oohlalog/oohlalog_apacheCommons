@@ -17,7 +17,7 @@ public class TestLogger {
 		for (int i = 0; i < 151; i++) {
 			m_log.warn(String.valueOf(i), new Throwable("throwable"));
 		}
-		for (int i = 151; i < 352; i++) {
+		for (int i = 151; i < 302; i++) {
 			m_log.error(String.valueOf(i));
 		}
 		System.out.println("end");

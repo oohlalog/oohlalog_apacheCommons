@@ -3,7 +3,7 @@ package com.oohlalog.commons;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogControl {
@@ -21,7 +21,7 @@ public class LogControl {
 	// The logger instance belonging to this LogControl
 	private OohLaLogLogger logger;
 
-	
+
 	/**
 	 * Constructor that creates our LogControl object.
 	 * @param logger
@@ -37,43 +37,67 @@ public class LogControl {
 
 
 	/**
-	 * Starts the timing processes.
+	 * Initializes the Log Control object.  It starts the thread that checks for, and handles three events:
+	 * 1. Event: Queue of logs reaches threshold	Action: Flush threshold value of logs to OLL server
+	 * 2. Event: Log timer goes off					Action: Flush all logs in the queue to the OLL server
+	 * 3. Event: Stats timer goes off				Action: Flush stats to the OLL server
 	 */
 	protected void init() {
-		startFlushTimer();
-		if (logger.getShowStats()) startStatsTimer();
+		// Starts the thread that checks to see if the size of the queue is greater than 150
+		startThresholdCheck();
+		
+		// Only start the stats thread if the user specified
+		if (this.logger.getShowStats())
+			startStatsTimer();
+		
+		// Only start the flush timer if there is something in the queue.
+		if (this.logger.getQueue().size() > 0)
+			startFlushTimer();
 	}
-
-
+	
+	
 	/**
 	 * Flushes the queue of log entries if the queue is of size greater than buffer threshold.
 	 */
-	protected void checkThreshold()
-	{
-		Queue<LogEntry> buffer = this.logger.getQueue();
-		if (buffer.size() > maxBuffer && !flushing.get()) {
-			if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
-			flushQueue(buffer);		
-		}
+	protected void startThresholdCheck() {
+		final OohLaLogLogger logger = this.logger;
+		Thread t = new Thread( new Runnable() {
+			public void run() {
+				while (true) {
+					BlockingQueue<LogEntry> buffer = logger.getQueue();
+					if (buffer.size() > maxBuffer && !flushing.get()) {
+						if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
+						flushQueue(buffer, 150);		
+					}
+				}
+			}
+		});
+		// If the JVM exits, we don't want this thread to prevent us from doing so as well
+		t.setDaemon(true);
+		t.start();
 	}
 
-
-
+	
 	/**
-	 * Starts the timer that will cause logs to be flushed at the set interval.
+	 * Starts the timer that will cause logs to be flushed at the set interval.  This thread runs to completion
+	 * when the queue is empty and get re-instantiated on first add to the queue.  This keeps the thread from running
+	 * forever while making sure that even when JVM finishes, all remaining logs are logged.
 	 */
 	protected void startFlushTimer() {
 		final OohLaLogLogger logger = this.logger;
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				// If appender closes, let thread die
-				while ( true ) {
+				while ( logger.getQueue().size() != 0 ) {
 					if (logger.getDebug()) System.out.println( ">>Timer Cycle" );
 
 					// If timeout, flush queue
 					if ( (System.currentTimeMillis() - lastFlush > timeBuffer) && !flushing.get() ) {
 						if (logger.getDebug()) System.out.println( ">>>Flushing from timer expiration" );
-						flushQueue( logger.getQueue() );
+						flushQueue( logger.getQueue(), Integer.MAX_VALUE );
+						
+						// This thread is done after flushing
+						break;
 					}
 
 					// Wait for a time interval
@@ -86,9 +110,7 @@ public class LogControl {
 				}
 			}
 		});
-		
-		// If the JVM exits, we don't want this thread to prevent us from doing so as well
-		t.setDaemon(true);
+
 		t.start();
 	}
 
@@ -128,18 +150,17 @@ public class LogControl {
 				}
 			}
 		});
-		
+
 		// If the JVM exits, we don't want this thread to prevent us from doing so as well
 		t.setDaemon(true);
 		t.start();
 	}
 
 
-
 	/**
 	 * Flush queue completely.
 	 */
-	protected void flushQueue( final Queue<LogEntry> queue ) {
+	protected synchronized void flushQueue( final BlockingQueue<LogEntry> queue, final int amtToFlush ) {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Queue Completely" );
 		flushing.set( true );
@@ -147,13 +168,8 @@ public class LogControl {
 			public void run() {
 				int size = queue.size();
 				List<LogEntry> logs = new ArrayList<LogEntry>(size);
-				for (int i = 0; i < size; i++) {
-					LogEntry log;
-					if ((log = queue.poll()) == null)
-						break;
-
-					logs.add(log);
-				}
+				
+				queue.drainTo(logs, amtToFlush);
 
 				if(logs.size() == 0) {
 					flushing.set(false);
@@ -176,7 +192,7 @@ public class LogControl {
 				flushing.set( false );
 			}
 		});
-				t.start();
+		t.start();
 	}
 
 }

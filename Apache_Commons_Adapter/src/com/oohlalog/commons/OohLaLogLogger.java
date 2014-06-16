@@ -5,12 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogConfigurationException;
@@ -49,7 +49,7 @@ public class OohLaLogLogger implements Log{
 
 	// ------------------------------------------------------------ Instance Variables
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
-    private Queue<LogEntry> queue = new ArrayDeque<LogEntry>();
+    private BlockingQueue<LogEntry> queue = new LinkedBlockingQueue<LogEntry>();
 	
     // The time threshold controlling how often uploads of logs are made to the OLL server
     private long timeBuffer = 10000;
@@ -200,8 +200,15 @@ public class OohLaLogLogger implements Log{
         String category = null;
         
         final LogEntry log = new LogEntry(type, (String)message, logName, shortName, timeStamp, hostName, details, category);
-        queue.add(log);
-        this.logControl.checkThreshold();
+        
+        
+        queue.offer(log);
+        
+        // Don't need to have the flushTimer going when there are no log entries in the queue. 
+        // Instead, we start the timer after adding an element which increasing queue size 
+        // from 0 to 1
+        if (queue.size() == 1)
+        	this.logControl.startFlushTimer();
     }
    
 	
@@ -307,7 +314,7 @@ public class OohLaLogLogger implements Log{
 	/**
 	 * Getter method for returning the Queue belonging to this OohLaLogLogger instance.
 	 */
-	public Queue<LogEntry> getQueue() {
+	public BlockingQueue<LogEntry> getQueue() {
 		return queue;
 	}
 
