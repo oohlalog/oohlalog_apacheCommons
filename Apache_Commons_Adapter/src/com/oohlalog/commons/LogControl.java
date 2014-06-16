@@ -65,7 +65,7 @@ public class LogControl {
 			public void run() {
 				while (true) {
 					BlockingQueue<LogEntry> buffer = logger.getQueue();
-					if (buffer.size() > maxBuffer && !flushing.get()) {
+					if (buffer.size() >= maxBuffer && !flushing.get()) {
 						if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
 						flushQueue(buffer, 150);		
 					}
@@ -160,7 +160,7 @@ public class LogControl {
 	/**
 	 * Flush queue completely.
 	 */
-	protected synchronized void flushQueue( final BlockingQueue<LogEntry> queue, final int amtToFlush ) {
+	protected void flushQueue( final BlockingQueue<LogEntry> queue, final int amtToFlush ) {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Queue Completely" );
 		flushing.set( true );
