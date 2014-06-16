@@ -16,21 +16,21 @@ public class Test1_part1 {
 		Log m_log = LogFactory.getLog("TestLogger");
 		
 		for (int i = 0; i < 150; i++) {
-			m_log.trace("Test Trace:"+i);
-			m_log.debug("Test Debug:"+i);
-			m_log.info("Test Info:"+i);
-			m_log.warn("Test Warn:"+i);
-			m_log.error("Test Error:"+i);
-			m_log.fatal("Test Fatal:"+i);
+			m_log.trace("TRACE:"+i); // Won't get printed because default level is info
+			m_log.debug("DEBUG:"+i); // Won't get printed because default level is info
+			m_log.info("INFO:"+i);
+			m_log.warn("WARN:"+i);
+			m_log.error("ERROR:"+i);
+			m_log.fatal("FATAL:"+i);
 		}
 		
-		for (int i = 0; i < 150; i++) {
-			m_log.trace("Test Trace with throwable:"+i, new Throwable("throwable"));
-			m_log.debug("Test Debug with throwable:"+i, new Throwable("throwable"));
-			m_log.info("Test Info with throwable:"+i, new Throwable("throwable"));
-			m_log.warn("Test Warn with throwable:"+i, new Throwable("throwable"));
-			m_log.error("Test Error with throwable:"+i, new Throwable("throwable"));
-			m_log.fatal("Test Fatal with throwable:"+i, new Throwable("throwable"));
+		for (int i = 150; i < 300; i++) {
+			m_log.trace("TRACE:"+i, new Throwable("throwable")); // Won't get printed because default level is info
+			m_log.debug("DEBUG:"+i, new Throwable("throwable")); // Won't get printed because default level is info
+			m_log.info("INFO:"+i, new Throwable("throwable"));
+			m_log.warn("WARN:"+i, new Throwable("throwable"));
+			m_log.error("ERROR:"+i, new Throwable("throwable"));
+			m_log.fatal("FATAL:"+i, new Throwable("throwable"));
 		}
 	}
 }
