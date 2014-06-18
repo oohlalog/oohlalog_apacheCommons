@@ -54,7 +54,7 @@ public class OohLaLogLogger implements Log{
     private int threshold = 100;
     
     // Maximum allowed size of the buffer
-	private int maxBuffer = 2000;//5;
+	private int maxBuffer = 1000;//5;
 	
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
 //    private BlockingDeque<LogEntry> deque = new LinkedBlockingDeque<LogEntry>(maxBuffer);
@@ -244,6 +244,7 @@ public class OohLaLogLogger implements Log{
     private void setLoggingInterval() {
     	timeBuffer = getLongProperty(systemPrefix + "timeBuffer", timeBuffer);
     	statsBuffer = getLongProperty(systemPrefix + "statsBuffer", timeBuffer);
+    	threshold = getIntProperty(systemPrefix + "threshold", threshold);
     	maxBuffer = getIntProperty(systemPrefix + "maxBuffer", maxBuffer);
     }
     
