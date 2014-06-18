@@ -91,12 +91,13 @@ public class Payload {
 	 * @param pl
 	 * @throws RuntimeException
 	 */
-	public static void send( Payload pl ) throws RuntimeException {
+	public static boolean send( Payload pl ) throws RuntimeException {
 		OutputStream os = null;
 	    BufferedReader rd  = null;
 	    StringBuilder sb = null;
 	    String line = null;
 	    HttpURLConnection con = null;
+	    boolean success = true;
 		try {
 			if (pl.getDebug()) System.out.println("Serializing: " + pl.toString());
 			// Serialize payload into json
@@ -129,7 +130,11 @@ public class Payload {
 			  sb.append(line + '\n');
 			}
 			if (pl.getDebug()) System.out.println( ">>>>>>>>>>>Received: " + sb.toString() );
-
+			
+			if (con.getResponseCode() != 200) {
+				success = false;
+				//TODO: implement a mandatory wait time upon failure
+			}
 		}
 		catch ( Throwable t ) {
 			t.printStackTrace();
@@ -147,6 +152,8 @@ public class Payload {
 				}
 			}
 		}
+		return success;
+
 	}
 
 	public String getAuthToken() {

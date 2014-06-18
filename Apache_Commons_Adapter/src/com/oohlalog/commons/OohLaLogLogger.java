@@ -1,5 +1,4 @@
 package com.oohlalog.commons;
-
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,8 +8,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogConfigurationException;
@@ -48,14 +48,18 @@ public class OohLaLogLogger implements Log{
     static volatile protected boolean showShortName = true;
 
 	// ------------------------------------------------------------ Instance Variables
-	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
-    private BlockingQueue<LogEntry> queue = new LinkedBlockingQueue<LogEntry>();
-	
+    
     // The time threshold controlling how often uploads of logs are made to the OLL server
     private long timeBuffer = 10000;
     
-    // Batch size logs are released in
-	private int maxBuffer = 150;//5;
+    // Logs are flushed once buffer reaches this size
+    private int threshold = 100;
+    
+    // Maximum allowed size of the buffer
+	private int maxBuffer = 200;//5;
+	
+	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
+    private BlockingDeque<LogEntry> deque = new LinkedBlockingDeque<LogEntry>(maxBuffer);
 	
     // The time threshold controlling how often uploads of statistics are made to the OLL server
 	private long statsBuffer = 60000; // 1 minute
@@ -166,7 +170,7 @@ public class OohLaLogLogger implements Log{
     	setLoggingInterval();
     	String temp = logName.substring(logName.lastIndexOf(".") + 1);
         logShortName = temp.substring(temp.lastIndexOf("/") + 1);
-    	logControl = new LogControl(this, this.maxBuffer, this.timeBuffer, this.statsBuffer);
+    	logControl = new LogControl(this, this.threshold, this.timeBuffer, this.statsBuffer);
     	logControl.init();
     }
 	
@@ -175,7 +179,7 @@ public class OohLaLogLogger implements Log{
     // -------------------------------------------------------- Logging Methods
 
     /**
-     * Creates a LogEntry and then adds it to the logger's queue.
+     * Creates a LogEntry and then adds it to the logger's deque.
      */
     protected void log(int type, Object message, Throwable t) {
         // Append time stamp
@@ -202,12 +206,16 @@ public class OohLaLogLogger implements Log{
         final LogEntry log = new LogEntry(type, (String)message, logName, shortName, timeStamp, hostName, details, category);
         
         
-        queue.offer(log);
+        if (!deque.offer(log)) {
+        	System.out.println("here");
+        	deque.poll();
+        	deque.offer(log);
+        };
         
-        // Don't need to have the flushTimer going when there are no log entries in the queue. 
-        // Instead, we start the timer after adding an element which increasing queue size 
+        // Don't need to have the flushTimer going when there are no log entries in the deque. 
+        // Instead, we start the timer after adding an element which increasing deque size 
         // from 0 to 1
-        if (queue.size() == 1)
+        if (deque.size() == 1)
         	this.logControl.startFlushTimer();
     }
    
@@ -312,10 +320,10 @@ public class OohLaLogLogger implements Log{
     
     
 	/**
-	 * Getter method for returning the Queue belonging to this OohLaLogLogger instance.
+	 * Getter method for returning the Deque belonging to this OohLaLogLogger instance.
 	 */
-	public BlockingQueue<LogEntry> getQueue() {
-		return queue;
+	public BlockingDeque<LogEntry> getDeque() {
+		return deque;
 	}
 
 	

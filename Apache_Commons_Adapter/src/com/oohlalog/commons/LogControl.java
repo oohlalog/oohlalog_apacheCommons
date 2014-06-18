@@ -3,7 +3,7 @@ package com.oohlalog.commons;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogControl {
@@ -15,8 +15,8 @@ public class LogControl {
 	private long lastFlush = System.currentTimeMillis();
 	// Is a flushing process currently happening?  TODO: Implement synchronized methods instead
 	private final AtomicBoolean flushing = new AtomicBoolean( false );
-	// Maximum size of the queue before we automatically flush it
-	private int maxBuffer;
+	// Maximum size of the deque before we automatically flush it
+	private int threshold;
 
 	// The logger instance belonging to this LogControl
 	private OohLaLogLogger logger;
@@ -25,12 +25,12 @@ public class LogControl {
 	/**
 	 * Constructor that creates our LogControl object.
 	 * @param logger
-	 * @param maxBuffer
+	 * @param threshold
 	 * @param timeBuffer
 	 */
-	public LogControl(OohLaLogLogger logger, int maxBuffer, long timeBuffer, long statsInterval) {
+	public LogControl(OohLaLogLogger logger, int threshold, long timeBuffer, long statsInterval) {
 		this.logger = logger;
-		this.maxBuffer = maxBuffer;
+		this.threshold = threshold;
 		this.timeBuffer = timeBuffer;
 		this.statsInterval = statsInterval;
 	}
@@ -38,36 +38,36 @@ public class LogControl {
 
 	/**
 	 * Initializes the Log Control object.  It starts the thread that checks for, and handles three events:
-	 * 1. Event: Queue of logs reaches threshold	Action: Flush threshold value of logs to OLL server
-	 * 2. Event: Log timer goes off					Action: Flush all logs in the queue to the OLL server
+	 * 1. Event: Deque of logs reaches threshold	Action: Flush threshold value of logs to OLL server
+	 * 2. Event: Log timer goes off					Action: Flush all logs in the deque to the OLL server
 	 * 3. Event: Stats timer goes off				Action: Flush stats to the OLL server
 	 */
 	protected void init() {
-		// Starts the thread that checks to see if the size of the queue is greater than 150
+		// Starts the thread that checks to see if the size of the deque is greater than 150
 		startThresholdCheck();
 		
 		// Only start the stats thread if the user specified
 		if (this.logger.getShowStats())
 			startStatsTimer();
 		
-		// Only start the flush timer if there is something in the queue.
-		if (this.logger.getQueue().size() > 0)
+		// Only start the flush timer if there is something in the deque.
+		if (this.logger.getDeque().size() > 0)
 			startFlushTimer();
 	}
 	
 	
 	/**
-	 * Flushes the queue of log entries if the queue is of size greater than buffer threshold.
+	 * Flushes the deque of log entries if the deque is of size greater than buffer threshold.
 	 */
 	protected void startThresholdCheck() {
 		final OohLaLogLogger logger = this.logger;
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				while (true) {
-					BlockingQueue<LogEntry> buffer = logger.getQueue();
-					if (buffer.size() >= maxBuffer && !flushing.get()) {
+					BlockingDeque<LogEntry> buffer = logger.getDeque();
+					if (buffer.size() >= threshold && !flushing.get()) {
 						if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
-						flushQueue(buffer, 150);		
+						flushDeque(buffer, threshold);		
 					}
 				}
 			}
@@ -80,7 +80,7 @@ public class LogControl {
 	
 	/**
 	 * Starts the timer that will cause logs to be flushed at the set interval.  This thread runs to completion
-	 * when the queue is empty and get re-instantiated on first add to the queue.  This keeps the thread from running
+	 * when the deque is empty and get re-instantiated on first add to the deque.  This keeps the thread from running
 	 * forever while making sure that even when JVM finishes, all remaining logs are logged.
 	 */
 	protected void startFlushTimer() {
@@ -88,13 +88,13 @@ public class LogControl {
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				// If appender closes, let thread die
-				while ( logger.getQueue().size() != 0 ) {
+				while ( logger.getDeque().size() != 0 ) {
 					if (logger.getDebug()) System.out.println( ">>Timer Cycle" );
 
-					// If timeout, flush queue
+					// If timeout, flush deque
 					if ( (System.currentTimeMillis() - lastFlush > timeBuffer) && !flushing.get() ) {
 						if (logger.getDebug()) System.out.println( ">>>Flushing from timer expiration" );
-						flushQueue( logger.getQueue(), Integer.MAX_VALUE );
+						flushDeque( logger.getDeque(), Integer.MAX_VALUE );
 						
 						// This thread is done after flushing
 						break;
@@ -158,18 +158,22 @@ public class LogControl {
 
 
 	/**
-	 * Flush queue completely.
+	 * Flush at most amtToFlush items from the deque.
 	 */
-	protected void flushQueue( final BlockingQueue<LogEntry> queue, final int amtToFlush ) {
+	protected void flushDeque( final BlockingDeque<LogEntry> deque, final int amtToFlush ) {
 		final OohLaLogLogger logger = this.logger;
-		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Queue Completely" );
+		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Deque Completely" );
 		flushing.set( true );
 		Thread t = new Thread( new Runnable() {
 			public void run() {
-				int size = queue.size();
-				List<LogEntry> logs = new ArrayList<LogEntry>(size);
+				int sizeD = deque.size();
 				
-				queue.drainTo(logs, amtToFlush);
+				// Creates a copy because we don't want to remove logs from deque
+				// unless payload is successfully delivered
+				List<LogEntry> logs = new ArrayList<LogEntry>(sizeD);
+				logs.addAll(deque);
+				int sizeL = logs.size();
+
 
 				if(logs.size() == 0) {
 					flushing.set(false);
@@ -186,8 +190,15 @@ public class LogControl {
 				.debug(logger.getDebug())
 				.build();
 
-				Payload.send( pl );
+				boolean success = Payload.send( pl );
 
+				// Payload successfully delivered so we can remove the logs that we already sent.
+				if (success) {
+					for (int i = 0; i < sizeL; i++) {
+						deque.poll();
+					}
+				}
+				
 				lastFlush = System.currentTimeMillis();
 				flushing.set( false );
 			}
