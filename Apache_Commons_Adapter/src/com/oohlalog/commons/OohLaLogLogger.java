@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogConfigurationException;
@@ -56,10 +54,11 @@ public class OohLaLogLogger implements Log{
     private int threshold = 100;
     
     // Maximum allowed size of the buffer
-	private int maxBuffer = 200;//5;
+	private int maxBuffer = 2000;//5;
 	
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
-    private BlockingDeque<LogEntry> deque = new LinkedBlockingDeque<LogEntry>(maxBuffer);
+//    private BlockingDeque<LogEntry> deque = new LinkedBlockingDeque<LogEntry>(maxBuffer);
+	private LogEntryBuffer logEntryBuffer;
 	
     // The time threshold controlling how often uploads of statistics are made to the OLL server
 	private long statsBuffer = 60000; // 1 minute
@@ -170,6 +169,8 @@ public class OohLaLogLogger implements Log{
     	setLoggingInterval();
     	String temp = logName.substring(logName.lastIndexOf(".") + 1);
         logShortName = temp.substring(temp.lastIndexOf("/") + 1);
+        
+        logEntryBuffer = new LogEntryBuffer(maxBuffer);
     	logControl = new LogControl(this, this.threshold, this.timeBuffer, this.statsBuffer);
     	logControl.init();
     }
@@ -206,16 +207,13 @@ public class OohLaLogLogger implements Log{
         final LogEntry log = new LogEntry(type, (String)message, logName, shortName, timeStamp, hostName, details, category);
         
         
-        if (!deque.offer(log)) {
-        	System.out.println("here");
-        	deque.poll();
-        	deque.offer(log);
-        };
+        // Adds the log to the buffer, knocking off an old log if needed
+        getLogEntryBuffer().addLogToBuffer(log);
         
         // Don't need to have the flushTimer going when there are no log entries in the deque. 
         // Instead, we start the timer after adding an element which increasing deque size 
         // from 0 to 1
-        if (deque.size() == 1)
+        if (getLogEntryBuffer().size() == 1)
         	this.logControl.startFlushTimer();
     }
    
@@ -318,14 +316,6 @@ public class OohLaLogLogger implements Log{
         this.currentLogLevel = currentLogLevel;
     }
     
-    
-	/**
-	 * Getter method for returning the Deque belonging to this OohLaLogLogger instance.
-	 */
-	public BlockingDeque<LogEntry> getDeque() {
-		return deque;
-	}
-
 	
 	/**
 	 * Getter method for returning the max buffer size belonging to this OohLaLogLogger instance.
@@ -334,7 +324,17 @@ public class OohLaLogLogger implements Log{
 		return maxBuffer;
 	}
 
-	
+	/**
+	 * Getter method for returning the LogEntryBuffer belonging to this OohLaLogLogger instance.
+	 */
+	protected synchronized LogEntryBuffer getLogEntryBuffer() {
+		return logEntryBuffer;
+	}
+
+//	protected synchronized void setLogEntryBuffer(LogEntryBuffer logEntryBuffer) {
+//		this.logEntryBuffer = logEntryBuffer;
+//	}
+
 	/**
 	 * Setter method for setting the max buffer size belonging to this OohLaLogLogger instance.
 	 */

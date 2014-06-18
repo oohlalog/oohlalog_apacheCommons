@@ -1,9 +1,6 @@
 package com.oohlalog.commons;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LogControl {
@@ -13,6 +10,10 @@ public class LogControl {
 	private long statsInterval;
 	// Time of last flush
 	private long lastFlush = System.currentTimeMillis();
+	// Time of last failed flush
+	private long lastFailedFlush = System.currentTimeMillis();
+	// Time to wait between failed flushes
+	private long failedFlushWait = 2000;
 	// Is a flushing process currently happening?  TODO: Implement synchronized methods instead
 	private final AtomicBoolean flushing = new AtomicBoolean( false );
 	// Maximum size of the deque before we automatically flush it
@@ -51,7 +52,7 @@ public class LogControl {
 			startStatsTimer();
 		
 		// Only start the flush timer if there is something in the deque.
-		if (this.logger.getDeque().size() > 0)
+		if (this.logger.getLogEntryBuffer().size() > 0)
 			startFlushTimer();
 	}
 	
@@ -64,10 +65,11 @@ public class LogControl {
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				while (true) {
-					BlockingDeque<LogEntry> buffer = logger.getDeque();
-					if (buffer.size() >= threshold && !flushing.get()) {
+					LogEntryBuffer buffer = logger.getLogEntryBuffer();
+					if ( (buffer.size() >= threshold) && !flushing.get() && 
+							(System.currentTimeMillis() - lastFailedFlush > failedFlushWait) ) {
 						if (logger.getDebug()) System.out.println( ">>>Above Threshold" );
-						flushDeque(buffer, threshold);		
+						flush(threshold);		
 					}
 				}
 			}
@@ -88,13 +90,13 @@ public class LogControl {
 		Thread t = new Thread( new Runnable() {
 			public void run() {
 				// If appender closes, let thread die
-				while ( logger.getDeque().size() != 0 ) {
+				while ( logger.getLogEntryBuffer().size() != 0 ) {
 					if (logger.getDebug()) System.out.println( ">>Timer Cycle" );
 
 					// If timeout, flush deque
 					if ( (System.currentTimeMillis() - lastFlush > timeBuffer) && !flushing.get() ) {
 						if (logger.getDebug()) System.out.println( ">>>Flushing from timer expiration" );
-						flushDeque( logger.getDeque(), Integer.MAX_VALUE );
+						flush(Integer.MAX_VALUE );
 						
 						// This thread is done after flushing
 						break;
@@ -110,7 +112,7 @@ public class LogControl {
 				}
 			}
 		});
-
+//		t.setDaemon(true);
 		t.start();
 	}
 
@@ -160,47 +162,23 @@ public class LogControl {
 	/**
 	 * Flush at most amtToFlush items from the deque.
 	 */
-	protected void flushDeque( final BlockingDeque<LogEntry> deque, final int amtToFlush ) {
+	protected void flush(final int amtToFlush ) {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Deque Completely" );
 		flushing.set( true );
 		Thread t = new Thread( new Runnable() {
 			public void run() {
-				int sizeD = deque.size();
-				
-				// Creates a copy because we don't want to remove logs from deque
-				// unless payload is successfully delivered
-				List<LogEntry> logs = new ArrayList<LogEntry>(sizeD);
-				logs.addAll(deque);
-				int sizeL = logs.size();
-
-
-				if(logs.size() == 0) {
-					flushing.set(false);
-					return;
-				}
-				Payload pl = new Payload.Builder()
-				.messages(logs)
-				.authToken(logger.getAuthToken())
-				.host(logger.getHost())
-				.agent(logger.getAgent())
-				.path(logger.getPath())
-				.port(logger.getPort())
-				.secure(logger.getSecure())
-				.debug(logger.getDebug())
-				.build();
-
-				boolean success = Payload.send( pl );
-
+				boolean success = logger.getLogEntryBuffer().flushLogEntryBuffer(logger, amtToFlush);
 				// Payload successfully delivered so we can remove the logs that we already sent.
 				if (success) {
-					for (int i = 0; i < sizeL; i++) {
-						deque.poll();
-					}
+					lastFlush = System.currentTimeMillis();
 				}
 				
-				lastFlush = System.currentTimeMillis();
+				else {
+					lastFailedFlush = System.currentTimeMillis();
+				}
 				flushing.set( false );
+				return;
 			}
 		});
 		t.start();
