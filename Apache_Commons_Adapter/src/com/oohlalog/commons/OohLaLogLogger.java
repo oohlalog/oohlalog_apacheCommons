@@ -57,18 +57,16 @@ public class OohLaLogLogger implements Log{
 	private int maxBuffer = 1000;//5;
 	
 	// Holds all of the Logs until reaching a time threshold when they are then emptied out in batches
-//    private BlockingDeque<LogEntry> deque = new LinkedBlockingDeque<LogEntry>(maxBuffer);
 	private LogEntryBuffer logEntryBuffer;
 	
     // The time threshold controlling how often uploads of statistics are made to the OLL server
 	private long statsBuffer = 60000; // 1 minute
 	
 	// For configuring the URL
-	private String host = "localhost";
+	private String host = "api.oohlalog.com"; //localhost"
 	private String path = "/api/logging/save.json";
 	private String statsPath = "/api/timeSeries/save.json";
-	private int port = 8196;
-	
+	private int port = 80; //8196
 	
 	private String authToken = null;
 	private String agent = "commons";
