@@ -138,7 +138,7 @@ public class OohLaLogLogger implements Log{
     // Load properties file, if found.
     // Override with system properties.
     static {
-        // Add props from the resource simplelog.properties
+        // Add props from the resource oohlalog.properties
         InputStream in = getResourceAsStream("oohlalog.properties");
         if(null != in) {
             try {
@@ -158,6 +158,8 @@ public class OohLaLogLogger implements Log{
     /**
      * Construct and starts up an OohLaLogLogger with a given name.  It also calls a functions that sets the 
      * authToken and the currentLevel.
+     * 
+     * @param name the name of this logger.  
      */
     public OohLaLogLogger(String name) {
     	logName = name;
@@ -179,6 +181,10 @@ public class OohLaLogLogger implements Log{
 
     /**
      * Creates a LogEntry and then adds it to the logger's deque.
+     * 
+     * @param type the level of this log
+     * @param message the message this log displays
+     * @param t a throwable that will be displayed with this log
      */
     protected void log(int type, Object message, Throwable t) {
         // Append time stamp

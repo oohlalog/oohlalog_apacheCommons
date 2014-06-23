@@ -34,7 +34,17 @@ public class LogEntry {
 	private String levelString;
 	
 
-	
+	/**
+	 * Constructor that creates a Log Entry object.
+	 * @param level the level of the Log Entry
+	 * @param message the message of the Log Entry
+	 * @param logName the full name of the Logger
+	 * @param logShortName the shortened name of the Logger
+	 * @param timeStamp the time this log was sent
+	 * @param hostName the name of the hose this log was sent from 
+	 * @param details details about this log
+	 * @param category the category that this log falls under
+	 */
 	public LogEntry(int level, String message, String logName, String logShortName, Long timeStamp, String hostName, String details, String category)
 	{
 		this.level = level;

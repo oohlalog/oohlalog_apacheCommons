@@ -44,7 +44,7 @@ public class Payload {
 
 	/**
 	 * Serialize payload into a transferrable dataformat (json)
-	 * @return
+	 * @return the payload as a JSON string
 	 */
 	public String serialize( ) {
 		Payload pl = this;
@@ -70,8 +70,8 @@ public class Payload {
 
 	/**
 	 * Transform a logging event into a map for serialization
-	 * @param le
-	 * @return
+	 * @param le the log entry to be transformed
+	 * @return a map, mapping the different properties of the LogEntry with their values.
 	 */
 	private static Map<String,Object> transform( LogEntry le ) {
 		Map<String,Object> map = new HashMap<String,Object>();
@@ -88,7 +88,7 @@ public class Payload {
 
 	/**
 	 * Write this payload to remote service
-	 * @param pl
+	 * @param pl the payload to send
 	 * @throws RuntimeException
 	 */
 	public static boolean send( Payload pl ) throws RuntimeException {
@@ -133,7 +133,6 @@ public class Payload {
 			
 			if (con.getResponseCode() != 200) {
 				success = false;
-				//TODO: implement a mandatory wait time upon failure
 			}
 		}
 		catch ( Throwable t ) {

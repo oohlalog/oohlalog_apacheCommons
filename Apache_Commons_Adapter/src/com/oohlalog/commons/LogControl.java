@@ -25,9 +25,11 @@ public class LogControl {
 
 	/**
 	 * Constructor that creates our LogControl object.
-	 * @param logger
-	 * @param threshold
-	 * @param timeBuffer
+	 * 
+	 * @param logger the OohLaLogLogger that this LogControl is tied to
+	 * @param threshold the amount of logs to be buffered before a flush
+	 * @param timeBuffer the amount of time to wait before flushes
+	 * @param statsInterval the amount of time to wait before gathering and sending usage statistics
 	 */
 	public LogControl(OohLaLogLogger logger, int threshold, long timeBuffer, long statsInterval) {
 		this.logger = logger;
@@ -161,14 +163,16 @@ public class LogControl {
 
 	/**
 	 * Flush at most amtToFlush items from the deque.
+	 * 
+	 * @param maxAmtToFlush the maximum amount of log entries to flush from buffer
 	 */
-	protected void flush(final int amtToFlush ) {
+	protected void flush(final int maxAmtToFlush ) {
 		final OohLaLogLogger logger = this.logger;
 		if (logger.getDebug()) System.out.println( ">>>>>>Flushing Deque Completely" );
 		flushing.set( true );
 		Thread t = new Thread( new Runnable() {
 			public void run() {
-				boolean success = logger.getLogEntryBuffer().flushLogEntryBuffer(logger, amtToFlush);
+				boolean success = logger.getLogEntryBuffer().flushLogEntryBuffer(logger, maxAmtToFlush);
 				// Payload successfully delivered so we can remove the logs that we already sent.
 				if (success) {
 					lastFlush = System.currentTimeMillis();
