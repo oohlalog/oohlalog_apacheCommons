@@ -258,7 +258,7 @@ public class Payload {
 		private String host = null;
 		private String hostName = null;
 		private String path = null;
-		private String agent = "log4j";
+		private String agent = "apache_commons";
 		private int port = 80;
 		private boolean secure = false;
 		private boolean debug = false;

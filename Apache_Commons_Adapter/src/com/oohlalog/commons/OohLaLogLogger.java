@@ -334,14 +334,6 @@ public class OohLaLogLogger implements Log{
 	protected int getMaxBuffer() {
 		return maxBuffer;
 	}
-
-
-	/**
-	 * Setter method for setting the max buffer size belonging to this OohLaLogLogger instance.
-	 */
-	protected void setMaxBuffer(int maxBuffer) {
-		this.maxBuffer = maxBuffer;
-	}
 	
 	
 	/**
@@ -351,14 +343,6 @@ public class OohLaLogLogger implements Log{
 		return threshold;
 	}
 
-	/**
-	 * Set the threshold value
-	 */
-	protected void setThreshold(int threshold) {
-		this.threshold = threshold;
-	}
-
-	
 	/** 
 	 * Get the size of the stats buffer
 	 */
@@ -366,14 +350,6 @@ public class OohLaLogLogger implements Log{
 		return statsBuffer;
 	}
 
-	
-	/**
-	 * Set the size of the stats Buffer
-	 */
-	protected void setStatsBuffer(long statsBuffer) {
-		this.statsBuffer = statsBuffer;
-	}
-	
 	
 	/**
 	 * Getter method for returning the LogEntryBuffer belonging to this OohLaLogLogger instance.
@@ -396,14 +372,6 @@ public class OohLaLogLogger implements Log{
 	 */
 	protected String getHostName() {
 		return hostName;
-	}
-
-	
-	/**
-	 * Setter method for setting the host name belonging to this OohLaLogLogger instance.
-	 */
-	protected void setHostName(String hostName) {
-		this.hostName = hostName;
 	}
 
 	
@@ -449,31 +417,12 @@ public class OohLaLogLogger implements Log{
 
 	
 	/**
-	 * Setter method for setting the authToken used by this instance of OohLaLogLogger
-	 * for connecting to an OohLaLog project. 
-	 */
-	protected void setAuthToken(String authToken) {
-		this.authToken = authToken;
-	}
-
-	
-	/**
 	 * Getter method for returning the timeBuffer used by this instance of OohLaLogLogger. 
 	 * TimeBuffer is the amount of time the logger will wait before issuing requests to
 	 * the OohLaLog server.
 	 */
 	protected long getTimeBuffer() {
 		return timeBuffer;
-	}
-
-	
-	/**
-	 * Setter method for setting the timeBuffer used by this instance of OohLaLogLogger. 
-	 * TimeBuffer is the amount of time the logger will wait before issuing requests to
-	 * the OohLaLog server.
-	 */
-	protected void setTimeBuffer(long timeBuffer) {
-		this.timeBuffer = timeBuffer;
 	}
 
 	
@@ -487,29 +436,11 @@ public class OohLaLogLogger implements Log{
 
 	
 	/**
-	 * Setter method for setting whether or not the connection to the OohLaLog server
-	 * is secure.
-	 */
-	protected void setSecure(boolean secure) {
-		this.secure = secure;
-	}
-
-	
-	/**
 	 * Getter method for returning whether or not the logger is in debug mode.  Debug mode
 	 * will cause many debug messages to be printed to StdOut.
 	 */
 	protected boolean getDebug() {
 		return debug;
-	}
-
-	
-	/**
-	 * Setter method for setting whether or not the logger is in debug mode.  Debug mode
-	 * will cause many debug messages to be printed to StdOut.
-	 */
-	protected void setDebug(boolean debug) {
-		this.debug = debug;
 	}
 
 	
@@ -523,29 +454,11 @@ public class OohLaLogLogger implements Log{
 
 	
 	/**
-	 * Setter method for setting a boolean indicating whether or not logging stats 
-	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
-	 */
-	protected void setShowStats(boolean showStats) {
-		this.showStats = showStats;
-	}
-
-	
-	/**
 	 * Getter method for returning a long representing the time in milliseconds this instance of 
 	 * OohLaLogLogger will wait before sending stats to the OohLaLog server.
 	 */
 	protected long getstatsBuffer() {
 		return statsBuffer;
-	}
-
-	
-	/**
-	 * Setter method for setting a long representing the time in milliseconds this instance of 
-	 * OohLaLogLogger will wait before sending stats to the OohLaLog server.
-	 */
-	protected void setstatsBuffer(long statsBuffer) {
-		this.statsBuffer = statsBuffer;
 	}
 
 	
@@ -559,29 +472,11 @@ public class OohLaLogLogger implements Log{
 
 	
 	/**
-	 * Setter method for setting a boolean indicating whether or not memory stats 
-	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
-	 */
-	protected void setShowMemoryStats(boolean showMemoryStats) {
-		this.showMemoryStats = showMemoryStats;
-	}
-
-	
-	/**
 	 * Getter method for returning a boolean indicating whether or not cpu stats 
 	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
 	 */
 	protected boolean getShowCPUStats() {
 		return showCPUStats;
-	}
-
-	
-	/**
-	 * Setter method for setting a boolean indicating whether or not cpu stats 
-	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
-	 */
-	protected void setShowCPUStats(boolean showCPUStats) {
-		this.showCPUStats = showCPUStats;
 	}
 
 	
@@ -595,15 +490,6 @@ public class OohLaLogLogger implements Log{
 
 	
 	/**
-	 * Setter method for setting a boolean indicating whether or not file system stats 
-	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
-	 */
-	protected void setShowFileSystemStats(boolean showFileSystemStats) {
-		this.showFileSystemStats = showFileSystemStats;
-	}
-
-	
-	/**
      * Is the given log level currently enabled?
      */
     protected boolean isLevelEnabled(int logLevel) {
@@ -611,7 +497,119 @@ public class OohLaLogLogger implements Log{
         // comparison
         return logLevel >= currentLogLevel;
     }
+//	/**
+//	 * Set the threshold value
+//	 */
+//	protected void setThreshold(int threshold) {
+//		this.threshold = threshold;
+//	}
 
+	
+//	/**
+//	 * Set the size of the stats Buffer
+//	 */
+//	protected void setStatsBuffer(long statsBuffer) {
+//		this.statsBuffer = statsBuffer;
+//	}
+	
+	
+//	/**
+//	 * Setter method for setting the host name belonging to this OohLaLogLogger instance.
+//	 */
+//	protected void setHostName(String hostName) {
+//		this.hostName = hostName;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting the authToken used by this instance of OohLaLogLogger
+//	 * for connecting to an OohLaLog project. 
+//	 */
+//	protected void setAuthToken(String authToken) {
+//		this.authToken = authToken;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting the timeBuffer used by this instance of OohLaLogLogger. 
+//	 * TimeBuffer is the amount of time the logger will wait before issuing requests to
+//	 * the OohLaLog server.
+//	 */
+//	protected void setTimeBuffer(long timeBuffer) {
+//		this.timeBuffer = timeBuffer;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting whether or not the connection to the OohLaLog server
+//	 * is secure.
+//	 */
+//	protected void setSecure(boolean secure) {
+//		this.secure = secure;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting whether or not the logger is in debug mode.  Debug mode
+//	 * will cause many debug messages to be printed to StdOut.
+//	 */
+//	protected void setDebug(boolean debug) {
+//		this.debug = debug;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting a boolean indicating whether or not logging stats 
+//	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
+//	 */
+//	protected void setShowStats(boolean showStats) {
+//		this.showStats = showStats;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting a long representing the time in milliseconds this instance of 
+//	 * OohLaLogLogger will wait before sending stats to the OohLaLog server.
+//	 */
+//	protected void setstatsBuffer(long statsBuffer) {
+//		this.statsBuffer = statsBuffer;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting a boolean indicating whether or not memory stats 
+//	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
+//	 */
+//	protected void setShowMemoryStats(boolean showMemoryStats) {
+//		this.showMemoryStats = showMemoryStats;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting a boolean indicating whether or not cpu stats 
+//	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
+//	 */
+//	protected void setShowCPUStats(boolean showCPUStats) {
+//		this.showCPUStats = showCPUStats;
+//	}
+
+	
+//	/**
+//	 * Setter method for setting a boolean indicating whether or not file system stats 
+//	 * associated with this instance of OohLaLogLogger will be sent to the OohLaLog server.
+//	 */
+//	protected void setShowFileSystemStats(boolean showFileSystemStats) {
+//		this.showFileSystemStats = showFileSystemStats;
+//	}
+    
+    
+//	/**
+//	 * Setter method for setting the max buffer size belonging to this OohLaLogLogger instance.
+//	 */
+//	protected void setMaxBuffer(int maxBuffer) {
+//		this.maxBuffer = maxBuffer;
+//	}
+    
     // -------------------------------------------------------- Log Implementation
 
     public String getLogName() {

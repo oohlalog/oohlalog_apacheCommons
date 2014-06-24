@@ -14,7 +14,7 @@ public class LogControl {
 	private long lastFailedFlush = System.currentTimeMillis();
 	// Time to wait between failed flushes
 	private long failedFlushWait = 2000;
-	// Is a flushing process currently happening?  TODO: Implement synchronized methods instead
+	// Is a flushing process currently happening? 
 	private final AtomicBoolean flushing = new AtomicBoolean( false );
 	// Maximum size of the deque before we automatically flush it
 	private int threshold;
@@ -136,7 +136,7 @@ public class LogControl {
 						.authToken(logger.getAuthToken())
 						.host(logger.getHost())
 						.agent(logger.getAgent())
-						.path(logger.getPath())
+						.path(logger.getStatsPath())
 						.port(logger.getPort())
 						.secure(logger.getSecure())
 						.debug(logger.getDebug())

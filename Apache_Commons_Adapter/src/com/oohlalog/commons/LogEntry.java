@@ -100,7 +100,5 @@ public class LogEntry {
 	
 	public String getCategory() {
 		return category;
-	}
-
-	
+	}	
 }
